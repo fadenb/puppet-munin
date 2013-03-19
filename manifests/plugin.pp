@@ -14,8 +14,8 @@
 define munin::plugin (
   $fromname   = undef,
   $ensure     = present,
-  $pluginpath = $munin::plugins_source,
-  $plugindest = $munin::plugins_dest,
+  $pluginpath = $munin::params::plugins_source,
+  $plugindest = $munin::params::plugins_dest,
 ) {
 
   if ! defined('::munin') {
@@ -40,6 +40,6 @@ define munin::plugin (
   file { "${plugindest}/${name}":
     ensure => $realensure,
     target => "${pluginpath}/${sourcename}",
-    notify => Service[$munin::node_service],
+    notify => Service[$munin::params::node_service],
   }
 }
