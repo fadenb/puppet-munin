@@ -17,6 +17,8 @@ define munin::plugin (
   $pluginpath = $munin::params::plugins_source,
   $plugindest = $munin::params::plugins_dest,
 ) {
+  # munin::params is required for paths and service variable
+  include munin::params
 
   if ! defined('::munin') {
     fail('You must declare the munin class before using this defined resource type')
