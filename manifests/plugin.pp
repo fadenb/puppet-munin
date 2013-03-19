@@ -31,10 +31,10 @@ define munin::plugin (
   $realensure = $ensure ? {
     present   => link,
     link      => link,
-    "present" => link,
-    "link"    => link,
+    'present' => link,
+    'link'    => link,
     absent    => absent,
-    "absent"  => absent,
+    'absent'  => absent,
   }
 
   file { "${plugindest}/${name}":
