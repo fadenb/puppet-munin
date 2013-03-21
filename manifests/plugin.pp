@@ -14,9 +14,11 @@
 define munin::plugin (
   $fromname   = undef,
   $ensure     = present,
-  $pluginpath = $munin::plugins_source,
-  $plugindest = $munin::plugins_dest,
+  $pluginpath = $munin::params::plugins_source,
+  $plugindest = $munin::params::plugins_dest,
 ) {
+  # munin::params is required for paths and service variable
+  include munin::params
 
   if ! defined('::munin') {
     fail('You must declare the munin class before using this defined resource type')
@@ -31,15 +33,15 @@ define munin::plugin (
   $realensure = $ensure ? {
     present   => link,
     link      => link,
-    "present" => link,
-    "link"    => link,
+    'present' => link,
+    'link'    => link,
     absent    => absent,
-    "absent"  => absent,
+    'absent'  => absent,
   }
 
   file { "${plugindest}/${name}":
     ensure => $realensure,
     target => "${pluginpath}/${sourcename}",
-    notify => Service[$munin::node_service],
+    notify => Service[$munin::params::node_service],
   }
 }
