@@ -39,12 +39,23 @@ class munin(
     package { $extra_packages: ensure => installed; }
   }
 
+  # create $confdir and $confdir/plugins-conf.d/ before the package is installed
+  # + create configs before package is installed to ensure service that may be
+  # automatically started by the package manager is using puppetized config
+  file { $confdir:
+    ensure => directory,
+  }
+  file {"$confdir/plugin-conf.d":
+    ensure => directory,
+  }
+
   # Write the node configuration
   file { $node_config:
     content => template('munin/munin-node.conf.erb'),
     ensure  => present,
     notify  => Service[$node_service],
-    require => Package[$base_packages],
+    require => File[$confdir],
+    before  => [Package[$base_packages], Package[$extra_packages]],
   }
 
   # Create the plugin configuration
@@ -52,7 +63,8 @@ class munin(
     content => template('munin/munin-plugins.conf.erb'),
     ensure  => present,
     notify  => Service[$node_service],
-    require => Package[$base_packages]
+    require => File["$confdir/plugin-conf.d"],
+    before  => [Package[$base_packages], Package[$extra_packages]],
   }
 
   file { "${plugins_conf}.sample": ensure => absent }
@@ -106,9 +118,14 @@ class munin(
     ensure     => running,
     enable     => true,
     hasrestart => true,
+    subscribe  => [
+      File[$node_config],
+      File[$plugins_conf],
+    ],
     require    => [
       File[$node_config],
       Package[$base_packages],
+      Package[$extra_packages],
       File[$logdir],
       File[$piddir]
     ],
