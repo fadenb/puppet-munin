@@ -39,6 +39,16 @@ class munin(
     package { $extra_packages: ensure => installed; }
   }
 
+  # Rebuild the database, but only when the file changes
+  exec { "service $node_service restart":
+    path        => ['/usr/sbin', '/usr/bin', '/sbin'],
+    subscribe   => [
+      File[$confdir],
+      File[$plugins_dest],
+    ],
+    refreshonly => true,
+  }
+
   # create $confdir and $confdir/plugins-conf.d/ before the package is installed
   # + create configs before package is installed to ensure service that may be
   # automatically started by the package manager is using puppetized config
@@ -78,7 +88,7 @@ class munin(
     recurse => true,
     purge   => true,
     notify  => Service[$node_service],
-    require => Package[$base_packages],
+    require => [Package[$base_packages], Package[$extra_packages]],
   }
 
   # Get the directory names
@@ -121,13 +131,15 @@ class munin(
     subscribe  => [
       File[$node_config],
       File[$plugins_conf],
+      File[$plugins_dest],
     ],
     require    => [
       File[$node_config],
       Package[$base_packages],
       Package[$extra_packages],
       File[$logdir],
-      File[$piddir]
+      File[$piddir],
+      File[$plugins_dest],
     ],
   }
 
