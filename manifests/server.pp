@@ -14,6 +14,7 @@
 class munin::server(
   $server_packages = $munin::params::server_packages,
   $confdir         = $munin::params::confdir,
+  $export_conf_dir = '/etc/munin/munin-conf.d/',
 ) inherits munin::params {
 
   include motd
@@ -30,5 +31,12 @@ class munin::server(
     content => template("munin/munin.conf.erb");
   }
 
+  file { $export_conf_dir:
+    ensure => 'directory',
+  }
+
   File <<| tag == 'munin_host' |>>
+  {
+    require => File[$export_conf_dir],
+  }
 }
